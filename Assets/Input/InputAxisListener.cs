@@ -11,6 +11,8 @@ namespace Softdrink{
 		private enum AxisListeningMode{
 			Interpolated,
 			Raw,
+			InterpolatedDelta,
+			RawDelta,
 		}
 
 		[SerializeField]
@@ -43,8 +45,8 @@ namespace Softdrink{
 		private float deadzone = 0.5f;
 
 		[SerializeField]
-		[TooltipAttribute("Whether the Axis Listener should check interpolated or raw Axis data.")]
-		private AxisListeningMode mode = AxisListeningMode.Interpolated;
+		[TooltipAttribute("Whether the Axis Listener should check interpolated or raw Axis data.\nInterpolatedDelta and RawDelta are similar to KeyDown / KeyUp events - they only return when there has been a change since the last frame.")]
+		private AxisListeningMode mode = AxisListeningMode.InterpolatedDelta;
 
 		[SerializeField]
 		[TooltipAttribute("Should try/catch error messages be reported to console?")]
@@ -60,14 +62,16 @@ namespace Softdrink{
 		}
 
 		private string axisNameOut = "";
+		private string pAxisName = "";
+		private string debugOut = "";
 		void Update () {
 			if(!listening) return;
 
-			axisNameOut = DetectAxis();
+			debugOut = DetectAxis();
 
-			if(axisNameOut == "") return;
+			if(debugOut == "") return;
 
-			Debug.Log(axisNameOut, this);
+			Debug.Log(debugOut, this);
 			
 			
 		}
@@ -75,6 +79,8 @@ namespace Softdrink{
 		// Return the string Name of the axis that provided input,
 		// and the direction +/- of input, delimited by a space
 		public string DetectAxis(){
+			pAxisName = axisNameOut;
+
 			switch(mode){
 				case AxisListeningMode.Interpolated:
 					axisNameOut = DetectAxisInterpolated();
@@ -82,9 +88,19 @@ namespace Softdrink{
 				case AxisListeningMode.Raw:
 					axisNameOut = DetectAxisRaw();
 					break;
+				case AxisListeningMode.InterpolatedDelta:
+					axisNameOut = DetectAxisInterpolated();
+					break;
+				case AxisListeningMode.RawDelta:
+					axisNameOut = DetectAxisRaw();
+					break;
 				default:
 					axisNameOut = DetectAxisInterpolated();
 					break;
+			}
+
+			if(mode == AxisListeningMode.InterpolatedDelta || mode == AxisListeningMode.RawDelta){
+				if(axisNameOut == pAxisName) return "";
 			}
 
 			return axisNameOut;

@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class SimpleColorPalette : MonoBehaviour {
+namespace Softdrink{
+	public class SimpleColorPalette : MonoBehaviour {
 
-	[SerializeField]
-	private Color[] colors;
+		[SerializeField]
+		private Color[] colors;
 
 
+	}
 }

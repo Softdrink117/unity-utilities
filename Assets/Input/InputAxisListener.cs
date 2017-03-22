@@ -192,5 +192,9 @@ namespace Softdrink{
 		public void setAxesPerController(int input){
 			axesPerController = input;
 		}
+
+		public void setListening(bool input){
+			listening = input;
+		}
 	}
 }

@@ -26,7 +26,7 @@ namespace Softdrink{
 		private KeyCode[] validKeyCodes;
 		void Awake(){
 			Init();
-			Debug.Log(DetectConnectedControllers(), this);
+			//Debug.Log(DetectConnectedControllers(), this);
 		}
 
 		public void Init(){
@@ -149,6 +149,9 @@ namespace Softdrink{
 			return _sb.ToString();
 		}
 
-
+		// SETTERS -----
+		public void setListening(bool input){
+			listening = input;
+		}
 	}
 }

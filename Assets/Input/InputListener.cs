@@ -131,6 +131,9 @@ namespace Softdrink{
 	[AddComponentMenu("Scripts/Input/Input Listener")]
 	public class InputListener : MonoBehaviour {
 
+		// Singelton Instance
+		public static InputListener Instance;
+
 		[SerializeField]
 		[TooltipAttribute("Is this Listener actively listening for inputs? \nIt is expensive to poll for any input, so only enable this when needed (EG: when rebinding controls).")]
 		private bool listening = true;
@@ -140,6 +143,16 @@ namespace Softdrink{
 		private InputAxisListener _ial;
 
 		void Awake() {
+			// If the Instance doesn't already exist
+			if(Instance == null){
+				// If the instance doesn't already exist, set it to this
+				Instance = this;
+			}else if(Instance != this){
+				// If an instance already exists that isn't this, destroy this instance and log what happened
+				Destroy(gameObject);
+				Debug.LogError("ERROR! The InputListener encountered another instance of InputListener; it destroyed itself rather than overwrite the existing instance.", this);
+			}
+
 			GetReferences();
 			_ikl.setListening(false);
 			_ial.setListening(false);
@@ -173,6 +186,10 @@ namespace Softdrink{
 			_ikl.setListening(false);
 			_ial.setListening(false);
 
+		}
+
+		public static StandardInput DetectInput(){
+			return Instance.GetInput();
 		}
 
 		public StandardInput GetInput(){
@@ -219,5 +236,10 @@ namespace Softdrink{
 			return _sb.ToString();
 		}
 
+		// SETTERS -----
+
+		public static void setListening(bool input){
+			Instance.listening = input;
+		}
 	}
 }

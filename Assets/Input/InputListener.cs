@@ -7,9 +7,12 @@ namespace Softdrink{
 	// Class to wrap both Key and Axis input in one
 	[System.Serializable]
 	public class StandardInput{
-		private KeyCode key = KeyCode.None;
-		private string axis = "";
-		private bool axisPositive = true;
+		[ReadOnlyAttribute]
+		public KeyCode key = KeyCode.None;
+		[ReadOnlyAttribute]
+		public string axis = "";
+		[ReadOnlyAttribute]
+		public bool axisPositive = true;
 		private bool isKey = true;
 		[HideInInspector]
 		public bool isDefined = false;
@@ -61,6 +64,7 @@ namespace Softdrink{
 		}
 
 		// Similar to GetKeyDown
+		// CURRENTLY NOT QUITE WORKING FOR AXIS
 		public bool GetInputDown(){
 			pOutTemp = outTemp;
 			if(isKey){
@@ -68,11 +72,12 @@ namespace Softdrink{
 			}else{
 				outTemp = Input.GetAxis(axis);
 				if(outTemp == pOutTemp) return false;
+				if(pOutTemp != 0f) return false;
 
 				if(axisPositive){
-					if(outTemp > 0.25f) return true;
+					if(outTemp > 0.0f) return true;
 				}else{
-					if(outTemp < -0.25f) return true;
+					if(outTemp < -0.0f) return true;
 				}
 			}
 
@@ -80,6 +85,7 @@ namespace Softdrink{
 		}
 
 		// Similar to GetKeyUp
+		// CURRENTLY NOT QUITE WORKING FOR AXIS
 		public bool GetInputUp(){
 			pOutTemp = outTemp;
 			if(isKey){
@@ -89,9 +95,9 @@ namespace Softdrink{
 				if(outTemp == pOutTemp) return false;
 
 				if(axisPositive){
-					if(outTemp > 0.25f) return true;
+					if(outTemp > 0.0f) return true;
 				}else{
-					if(outTemp < -0.25f) return true;
+					if(outTemp < -0.0f) return true;
 				}
 			}
 
@@ -108,10 +114,16 @@ namespace Softdrink{
 				outTemp = Input.GetAxis(axis);
 				if(axisPositive){
 					if(outTemp > 0f) return outTemp;
-					else return 0f;
+					else{
+						outTemp = 0f;
+						return 0f;
+					}
 				}else{
 					if(outTemp < 0f) return outTemp;
-					else return 0f;
+					else{
+						outTemp = 0f;
+						return 0f;
+					}
 				}
 			}
 

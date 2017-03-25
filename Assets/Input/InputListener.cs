@@ -66,10 +66,11 @@ namespace Softdrink{
 		// Similar to GetKeyDown
 		// CURRENTLY NOT QUITE WORKING FOR AXIS
 		public bool GetInputDown(){
-			pOutTemp = outTemp;
+			
 			if(isKey){
 				if(Input.GetKeyDown(key)) return true;
 			}else{
+				pOutTemp = outTemp;
 				outTemp = Input.GetAxis(axis);
 				if(outTemp == pOutTemp) return false;
 				if(pOutTemp != 0f) return false;
@@ -87,12 +88,18 @@ namespace Softdrink{
 		// Similar to GetKeyUp
 		// CURRENTLY NOT QUITE WORKING FOR AXIS
 		public bool GetInputUp(){
-			pOutTemp = outTemp;
+			
 			if(isKey){
 				if(Input.GetKeyUp(key)) return true;
 			}else{
+				pOutTemp = outTemp;
 				outTemp = Input.GetAxis(axis);
 				if(outTemp == pOutTemp) return false;
+				if(axisPositive){
+					if(pOutTemp != 1f) return false;
+				}else{
+					if(pOutTemp != -1f) return false;
+				}
 
 				if(axisPositive){
 					if(outTemp > 0.0f) return true;
@@ -106,11 +113,12 @@ namespace Softdrink{
 
 		// Evaluate and return a float
 		public float GetInputValue(){
-			pOutTemp = outTemp;
+			
 			if(isKey){
 				if(Input.GetKey(key)) return 1f;
 				else return 0f;
 			}else{
+				pOutTemp = outTemp;
 				outTemp = Input.GetAxis(axis);
 				if(axisPositive){
 					if(outTemp > 0f) return outTemp;

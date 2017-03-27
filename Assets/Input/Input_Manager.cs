@@ -3,6 +3,26 @@ using System.Collections;
 
 namespace Softdrink{
 
+	//TODO: Modify to take StandardInputs
+	//TODO: Create new InputMaps intelligently based on
+	// number of players and connected devices. EG:
+	// - 1 Player, 1 Joystick - bindings on J1A1, J1A2, etc
+	// - 2 Players, 2 Joysticks - P1 bindings defaulted to J1A1, etc
+	// and P2 bindings defaulted to J2A1, etc
+	//TODO: Integration with InputListener and InputBinder
+	//TODO: InputBinder has a generic modal dialog or method
+	// that basically asks "press a key to bind to X action"
+	// This can be either standalone for modifying one key
+	// or used in succession for a 'quick bind'
+	//TODO: InputBinder has two main methods:
+	// One takes an InputMap as a parameter and returns a modified
+	// version of that InputMap. This is useful for rebinding one
+	// key at a time.
+	// The other takes no parameters and returns a new InputMap - 
+	// this is a Quick Bind operation.
+	//TODO: Generic standardized Inputs for Title screen, and other
+	// situations where the Player may not have bound all his inputs
+
 	// Class for storing key->action mappings		// HEAVILY DEBUG RN
 	[System.Serializable]
 	public class KeyMap{

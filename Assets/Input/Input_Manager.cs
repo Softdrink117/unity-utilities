@@ -80,7 +80,7 @@ namespace Softdrink{
 
 	// Input_Manager is a Singleton that handles all input for all Players in the game
 	// It polls for inputs and uses KeyMaps to bind them to actions
-	[AddComponentMenu("Scripts/Global Managers/Input Manager")]
+	[AddComponentMenu("Scripts/Input/Input Manager")]
 	public class Input_Manager : MonoBehaviour {
 
 		// Singleton instance

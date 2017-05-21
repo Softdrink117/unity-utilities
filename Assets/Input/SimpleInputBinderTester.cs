@@ -5,15 +5,10 @@ namespace Softdrink{
 	[AddComponentMenu("Scripts/Input/Testers/Simple Input Binder Tester")]
 	public class SimpleInputBinderTester : MonoBehaviour {
 
-		//public InputBinder binder = null;
-
+		[TooltipAttribute("Which Player Keymap should be rebound?")]
 		public int playerKeymapID = 1;
 
 		private KeyMap map;
-
-		void Awake(){
-
-		}
 
 		void GetMap(){
 			map = Input_Manager.GetMapFromPlayerID(playerKeymapID);
@@ -22,7 +17,6 @@ namespace Softdrink{
 		[ContextMenu("TestQuickBind")]
 		public void TestQuickBind(){
 			if(map == null) GetMap();
-			//binder.BeginQuickBind(map);
 			InputBinder.BeginQuickBind(map);
 		}
 

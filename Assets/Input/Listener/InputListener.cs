@@ -49,7 +49,7 @@ namespace Softdrink{
 		private KeyCode keyOut = KeyCode.None;
 		private string axisOut = "";
 		private string[] axisOutTemp = new string[2];
-		private EInput inputOut = new EInput();
+		private EInput inputOut = new EInput(KeyCode.None);
 		
 		void Update() {
 			if(!listening) return;
@@ -76,7 +76,7 @@ namespace Softdrink{
 
 			//if(keyOut != KeyCode.None) Debug.Log(keyOut, this);
 			//else if(axisOut != "") Debug.Log(axisOut, this);
-			inputOut = new EInput();
+			inputOut = new EInput(KeyCode.None);
 
 			if(keyOut != KeyCode.None) inputOut = new EInput(keyOut);
 			else if(axisOut != ""){

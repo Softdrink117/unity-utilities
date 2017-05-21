@@ -88,7 +88,7 @@ namespace Softdrink{
 
 		[SerializeField]
 		[TooltipAttribute("The KeyMaps used by the Input_Manager to bind key input into game actions.")]
-		public KeyMap[] maps = new KeyMap[1];
+		public KeyMap[] maps;
 
 		[SerializeField]
 		//[ReadOnlyAttribute]
@@ -120,6 +120,10 @@ namespace Softdrink{
 		#if UNITY_EDITOR
 		// Make sure the input and output are logically similar
 		public void OnValidate(){
+			if(maps.Length <= 0){
+				maps = new KeyMap[1];
+			}
+
 			// Validate the KeyMaps that already exist
 			for(int i = 0; i < maps.Length; i++){
 				maps[i].Validate();
@@ -130,7 +134,6 @@ namespace Softdrink{
 				output = new ActionOutput[maps.Length];
 				for(int i = 0; i < output.Length; i++){
 					output[i] = new ActionOutput();
-					
 				}
 			}
 
@@ -138,6 +141,7 @@ namespace Softdrink{
 			for(int i = 0; i < output.Length; i++){
 				output[i].setName(maps[i].getName());
 				output[i].setAssociatedPlayer(maps[i].getAssociatedPlayer());
+				//output[i] .targetKeymap = maps[i];
 				output[i].targetKeymap = new KeyMap(maps[i]);
 			}
 		}

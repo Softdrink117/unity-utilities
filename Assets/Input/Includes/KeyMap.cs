@@ -16,85 +16,47 @@ namespace Softdrink{
 		[TooltipAttribute("Which Player is this KeyMap associated with? \nA value of 0 or less means that it is common to all Players, as a system-wide mapping. This is desirable in certain cases, such as common menus.")]
 		private int associatedPlayer = 0;
 
+		[ReadOnlyAttribute]
+		[TooltipAttribute("Is this KeyMap fully bound?")]
+		public bool fullyBound = false;
+
 		[HeaderAttribute("Directions")]
 
-		public EInput up = new EInput();
-		public EInput down = new EInput();
-		public EInput left = new EInput();
-		public EInput right = new EInput();
-
-		[TooltipAttribute("What Key(s) are bound to the logical Up action?")]
-		public KeyCode[] upKeys = new KeyCode[1];
-
-		[TooltipAttribute("What Key(s) are bound to the logical Down action?")]
-		public KeyCode[] downKeys = new KeyCode[1];
-
-		[TooltipAttribute("What Key(s) are bound to the logical Left action?")]
-		public KeyCode[] leftKeys = new KeyCode[1];
-
-		[TooltipAttribute("What Key(s) are bound to the logical Right action?")]
-		public KeyCode[] rightKeys = new KeyCode[1];
+		[TooltipAttribute("What input is bound to UP?")]
+		public EInput up;
+		[TooltipAttribute("What input is bound to DOWN?")]
+		public EInput down;
+		[TooltipAttribute("What input is bound to LEFT?")]
+		public EInput left;
+		[TooltipAttribute("What input is bound to RIGHT?")]
+		public EInput right;
 
 		[HeaderAttribute("Actions")]
 
-		public EInput a = new EInput();
-		public EInput b = new EInput();
-		public EInput x = new EInput();
-		public EInput y = new EInput();
+		[TooltipAttribute("What input is bound to A?")]
+		public EInput a;
+		[TooltipAttribute("What input is bound to B?")]
+		public EInput b;
+		[TooltipAttribute("What input is bound to X?")]
+		public EInput x;
+		[TooltipAttribute("What input is bound to Y?")]
+		public EInput y;
 
-		[TooltipAttribute("What Key(s) are bound to the logical 'A Button'?")]
-		public KeyCode[] aButtonKeys = new KeyCode[1];
-
-		[TooltipAttribute("What Key(s) are bound to the logical 'B Button'?")]
-		public KeyCode[] bButtonKeys = new KeyCode[1];
-
-		[TooltipAttribute("What Key(s) are bound to the logical 'X Button'?")]
-		public KeyCode[] xButtonKeys = new KeyCode[1];
-
-		[TooltipAttribute("What Key(s) are bound to the logical 'Y Button'?")]
-		public KeyCode[] yButtonKeys = new KeyCode[1];
-
-		
-
-		// Constructor to set some defaults
-		KeyMap(){
-			// Directions
-			upKeys[0] = KeyCode.W;
-			downKeys[0] = KeyCode.S;
-			leftKeys[0] = KeyCode.A;
-			rightKeys[0] = KeyCode.D;
-
-			// Actions
-			aButtonKeys[0] = KeyCode.J;
-			bButtonKeys[0] = KeyCode.K;
-			xButtonKeys[0] = KeyCode.I;
-			yButtonKeys[0] = KeyCode.L;
-
-		}
+		// Constructors -------
 
 		public KeyMap(KeyMap input){
 			Name = input.getName();
 			associatedPlayer = input.getAssociatedPlayer();
 
-			up = input.up;
-			down = input.down;
-			left = input.left;
-			right = input.right;
+			up = new EInput(input.up);
+			down = new EInput(input.down);
+			left = new EInput(input.left);
+			right = new EInput(input.right);
 
-			upKeys = input.getKeys(input.upKeys);
-			downKeys = input.getKeys(input.downKeys);
-			leftKeys = input.getKeys(input.leftKeys);
-			rightKeys = input.getKeys(input.rightKeys);
-
-			a = input.a;
-			b = input.b;
-			x = input.x;
-			y = input.y;
-
-			aButtonKeys = input.getKeys(input.aButtonKeys);
-			bButtonKeys = input.getKeys(input.bButtonKeys);
-			xButtonKeys = input.getKeys(input.xButtonKeys);
-			yButtonKeys = input.getKeys(input.yButtonKeys);
+			a = new EInput(input.a);
+			b = new EInput(input.b);
+			x = new EInput(input.x);
+			y = new EInput(input.y);
 		}
 
 		// Validate -------
@@ -109,71 +71,55 @@ namespace Softdrink{
 			b.Validate();
 			x.Validate();
 			y.Validate();
+
+			fullyBound = CheckFullyBound();
+		}
+
+		public bool CheckFullyBound(){
+			if(!up.isDefined) return false;
+			if(!down.isDefined) return false;
+			if(!right.isDefined) return false;
+			if(!left.isDefined) return false;
+
+			if(!a.isDefined) return false;
+			if(!b.isDefined) return false;
+			if(!x.isDefined) return false;
+			if(!y.isDefined) return false;
+
+			return true;
 		}
 
 		// Evaluate a given Key
 
 		public bool EvaluateUp(){
-			// for(int i = 0; i < upKeys.Length; i++){
-			// 	if(Input.GetKey(upKeys[i])) return true;
-			// }
-			// return false;
 			return up.GetInput();
 		}
 
 		public bool EvaluateDown(){
-			// for(int i = 0; i < downKeys.Length; i++){
-			// 	if(Input.GetKey(downKeys[i])) return true;
-			// }
-			// return false;
 			return down.GetInput();
 		}
 
 		public bool EvaluateLeft(){
-			// for(int i = 0; i < leftKeys.Length; i++){
-			// 	if(Input.GetKey(leftKeys[i])) return true;
-			// }
-			// return false;
 			return left.GetInput();
 		}
 
 		public bool EvaluateRight(){
-			// for(int i = 0; i < rightKeys.Length; i++){
-			// 	if(Input.GetKey(rightKeys[i])) return true;
-			// }
-			// return false;
 			return right.GetInput();
 		}
 
 		public bool EvaluateA(){
-			// for(int i = 0; i < aButtonKeys.Length; i++){
-			// 	if(Input.GetKey(aButtonKeys[i])) return true;
-			// }
-			// return false;
 			return a.GetInput();
 		}
 
 		public bool EvaluateB(){
-			// for(int i = 0; i < bButtonKeys.Length; i++){
-			// 	if(Input.GetKey(bButtonKeys[i])) return true;
-			// }
-			// return false;
 			return b.GetInput();
 		}
 
 		public bool EvaluateX(){
-			// for(int i = 0; i < xButtonKeys.Length; i++){
-			// 	if(Input.GetKey(xButtonKeys[i])) return true;
-			// }
-			// return false;
 			return x.GetInput();
 		}
 
 		public bool EvaluateY(){
-			// for(int i = 0; i < yButtonKeys.Length; i++){
-			// 	if(Input.GetKey(yButtonKeys[i])) return true;
-			// }
-			// return false;
 			return y.GetInput();
 		}
 
@@ -181,14 +127,6 @@ namespace Softdrink{
 
 		public string getName(){
 			return Name;
-		}
-
-		public KeyCode[] getKeys(KeyCode[] input){
-			KeyCode[] output = new KeyCode[input.Length];
-			for(int i = 0; i < output.Length; i++){
-				output[i] = input[i];
-			}
-			return output;
 		}
 
 		public int getAssociatedPlayer(){

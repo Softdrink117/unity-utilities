@@ -8,24 +8,21 @@ namespace Softdrink{
 	[System.Serializable]
 	public class EInput{
 		//[ReadOnlyAttribute]
+		[TooltipAttribute("The Keyboard Key bound to this action, if any.")]
 		public KeyCode key = KeyCode.None;
 		//[ReadOnlyAttribute]
+		[TooltipAttribute("The String name of the Input Axis bound to this action, if any.")]
 		public string axis = "";
 		//[ReadOnlyAttribute]
+		[TooltipAttribute("If this action binding uses an Input Axis, is that axis Positive or Negative?")]
 		public bool axisPositive = true;
-		[SerializeField]
 		[ReadOnlyAttribute]
-		private bool isKey = true;
+		[TooltipAttribute("Is this action binding using a Keyboard Key or an Input Axis?")]
+		public bool isKey = true;
 		[HideInInspector]
 		public bool isDefined = false;
 
 		// Overloaded constructor variants
-		public EInput(){
-			key = KeyCode.None;
-			axis = "";
-			isKey = true;
-			isDefined = false;
-		}
 
 		public EInput(string axisIn, bool axisPositiveIn){
 			key = KeyCode.None;
@@ -41,7 +38,16 @@ namespace Softdrink{
 			axis = "";
 			isKey = true;
 
+			if(key == KeyCode.None) isDefined = false;
+
 			isDefined = true;
+		}
+
+		public EInput(EInput input){
+			key = input.key;
+			axis = input.axis;
+			isKey = input.isKey;
+			isDefined = input.isDefined;
 		}
 
 		// Validate settings ------
@@ -56,7 +62,7 @@ namespace Softdrink{
 			if(!axis.Equals("")){
 				isKey = false;
 				isDefined = true;
-				//key = KeyCode.None;
+				key = KeyCode.None;
 				return;
 			}
 		}

@@ -16,8 +16,13 @@ namespace Softdrink{
 		Start_Button = 1 << 8,
 	};
 
+	// InputBinder is a Singleton - mostly to avoid ANY POSSIBLE ISSUE with
+	// more than one existing at once and massively fucking up the Input system
 	[AddComponentMenu("Scripts/Input/Input Binder")]
 	public class InputBinder : MonoBehaviour {
+
+		// Singleton instance
+		public static InputBinder Instance = null;
 
 		// Stores what, if any, bind operations are currently ongoing
 		// If this is not 0 << 0, some operation is happening
@@ -59,6 +64,16 @@ namespace Softdrink{
 		// Initialization -------
 
 		void Awake(){
+			// If the Instance doesn't already exist
+			if(Instance == null){
+				// If the instance doesn't already exist, set it to this
+				Instance = this;
+			}else if(Instance != this){
+				// If an instance already exists that isn't this, destroy this instance and log what happened
+				Destroy(gameObject);
+				Debug.LogError("ERROR! The Input Binder encountered another instance of InputBinder; it destroyed itself rather than overwrite the existing instance.", this);
+			}
+
 			bindOperation = 0;
 		}
 		// Update -------
@@ -174,9 +189,9 @@ namespace Softdrink{
 
 		// Binding functions -------
 
-		public void BeginQuickBind(KeyMap mapIn){
-			SetMaps(mapIn);
-			BeginQuickBind();
+		public static void BeginQuickBind(KeyMap mapIn){
+			Instance.SetMaps(mapIn);
+			Instance.BeginQuickBind();
 		}
 
 		[ContextMenu("BeginQuickBind")]
@@ -189,9 +204,9 @@ namespace Softdrink{
 		}
 
 
-		public void RebindUp(KeyMap mapIn){
-			SetMaps(mapIn);
-			RebindUp();
+		public static void RebindUp(KeyMap mapIn){
+			Instance.SetMaps(mapIn);
+			Instance.RebindUp();
 		}
 
 		[ContextMenu("RebindUp")]
@@ -201,9 +216,9 @@ namespace Softdrink{
 		}
 
 
-		public void RebindDown(KeyMap mapIn){
-			SetMaps(mapIn);
-			RebindDown();
+		public static void RebindDown(KeyMap mapIn){
+			Instance.SetMaps(mapIn);
+			Instance.RebindDown();
 		}
 
 		[ContextMenu("RebindDown")]
@@ -213,9 +228,9 @@ namespace Softdrink{
 		}
 
 
-		public void RebindLeft(KeyMap mapIn){
-			SetMaps(mapIn);
-			RebindLeft();
+		public static void RebindLeft(KeyMap mapIn){
+			Instance.SetMaps(mapIn);
+			Instance.RebindLeft();
 		}
 
 		[ContextMenu("RebindLeft")]
@@ -225,9 +240,9 @@ namespace Softdrink{
 		}
 
 
-		public void RebindRight(KeyMap mapIn){
-			SetMaps(mapIn);
-			RebindRight();
+		public static void RebindRight(KeyMap mapIn){
+			Instance.SetMaps(mapIn);
+			Instance.RebindRight();
 		}
 
 		[ContextMenu("RebindRight")]
@@ -237,9 +252,9 @@ namespace Softdrink{
 		}
 
 
-		public void RebindA(KeyMap mapIn){
-			SetMaps(mapIn);
-			RebindA();
+		public static void RebindA(KeyMap mapIn){
+			Instance.SetMaps(mapIn);
+			Instance.RebindA();
 		}
 
 		[ContextMenu("RebindA")]
@@ -249,9 +264,9 @@ namespace Softdrink{
 		}
 
 
-		public void RebindB(KeyMap mapIn){
-			SetMaps(mapIn);
-			RebindB();
+		public static void RebindB(KeyMap mapIn){
+			Instance.SetMaps(mapIn);
+			Instance.RebindB();
 		}
 
 		[ContextMenu("RebindB")]
@@ -261,9 +276,9 @@ namespace Softdrink{
 		}
 
 
-		public void RebindX(KeyMap mapIn){
-			SetMaps(mapIn);
-			RebindX();
+		public static void RebindX(KeyMap mapIn){
+			Instance.SetMaps(mapIn);
+			Instance.RebindX();
 		}
 
 		[ContextMenu("RebindX")]
@@ -273,9 +288,9 @@ namespace Softdrink{
 		}
 
 
-		public void RebindY(KeyMap mapIn){
-			SetMaps(mapIn);
-			RebindY();
+		public static void RebindY(KeyMap mapIn){
+			Instance.SetMaps(mapIn);
+			Instance.RebindY();
 		}
 
 		[ContextMenu("RebindY")]
@@ -285,9 +300,9 @@ namespace Softdrink{
 		}
 
 
-		public void RebindStart(KeyMap mapIn){
-			SetMaps(mapIn);
-			RebindStart();
+		public static void RebindStart(KeyMap mapIn){
+			Instance.SetMaps(mapIn);
+			Instance.RebindStart();
 		}
 
 		[ContextMenu("RebindStart")]

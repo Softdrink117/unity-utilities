@@ -5,7 +5,7 @@ namespace Softdrink{
 	[AddComponentMenu("Scripts/Input/Testers/Simple Input Binder Tester")]
 	public class SimpleInputBinderTester : MonoBehaviour {
 
-		public InputBinder binder = null;
+		//public InputBinder binder = null;
 
 		public int playerKeymapID = 1;
 
@@ -22,7 +22,8 @@ namespace Softdrink{
 		[ContextMenu("TestQuickBind")]
 		public void TestQuickBind(){
 			if(map == null) GetMap();
-			binder.BeginQuickBind(map);
+			//binder.BeginQuickBind(map);
+			InputBinder.BeginQuickBind(map);
 		}
 
 

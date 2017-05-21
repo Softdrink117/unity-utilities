@@ -4,49 +4,49 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace Softdrink{
+	
+
 	[AddComponentMenu("Scripts/Input/Axis Listener")]
 	public class InputAxisListener : MonoBehaviour {
 
-		// Enum for determinind axis listening mode
-		private enum AxisListeningMode{
-			Interpolated,
-			Raw,
-			InterpolatedDelta,
-			RawDelta,
-		}
+		
 
 		[SerializeField]
 		[TooltipAttribute("Is this AxisListener actively listening for inputs? \nIt is expensive to poll for any input, so only enable this when needed (EG: when rebinding controls).")]
 		private bool listening = true;
 
-		[HeaderAttribute("Virtual Controller Settings")]
-
 		[SerializeField]
-		[TooltipAttribute("The prepend for virtual Controller names in the Unity Project Settings > Input tab, where the format is 'prepend # intersperse #'.")]
-		private string controllerNamePrepend = "J";
+		[TooltipAttribute("The settings file controlling this Listener.")]
+		private InputAxisListenerSettings settings = null;
 
-		[SerializeField]
-		[TooltipAttribute("The intersperse for virtual Controller names in the Unity Project Settings > Input tab, where the format is 'prepend # intersperse #'.")]
-		private string controllerNameIntersperse = "A";
+		// [HeaderAttribute("Virtual Controller Settings")]
 
-		[SerializeField]
-		[TooltipAttribute("How many virtual Controllers have been defined? \nThis number MUST be less than or equal to the number of defined virtual Controllers in the Unity Project Settings > Input tab.")]
-		private int definedVirtualControllers = 2;
+		// [SerializeField]
+		// [TooltipAttribute("The prepend for virtual Controller names in the Unity Project Settings > Input tab, where the format is 'prepend # intersperse #'.")]
+		// private string controllerNamePrepend = "J";
 
-		[SerializeField]
-		[TooltipAttribute("How many virtual Axes have been defined per virtual Controller? \nThis MUST be less than or equal to the number of Axes defined per Controller in the Unity Project Settings > Input tab. \nNote that a typical controller will use 2 axes per analog thumbstick or POV hat, and they are usually counted in X1Y1X2Y2... order. \nFor left and right thumbstick input per controller, use a value of 4, and define 4 virtual axes per Controller in the Input Settings tab.")]
-		private int axesPerController = 2;
+		// [SerializeField]
+		// [TooltipAttribute("The intersperse for virtual Controller names in the Unity Project Settings > Input tab, where the format is 'prepend # intersperse #'.")]
+		// private string controllerNameIntersperse = "A";
 
-		[HeaderAttribute("Listener Settings")]
+		// [SerializeField]
+		// [TooltipAttribute("How many virtual Controllers have been defined? \nThis number MUST be less than or equal to the number of defined virtual Controllers in the Unity Project Settings > Input tab.")]
+		// private int definedVirtualControllers = 2;
 
-		[SerializeField]
-		[Range(0f, 1f)]
-		[TooltipAttribute("Deadzone for Axis movement when Listening. \nThis should be large, to avoid any accidental movement bindings.")]
-		private float deadzone = 0.5f;
+		// [SerializeField]
+		// [TooltipAttribute("How many virtual Axes have been defined per virtual Controller? \nThis MUST be less than or equal to the number of Axes defined per Controller in the Unity Project Settings > Input tab. \nNote that a typical controller will use 2 axes per analog thumbstick or POV hat, and they are usually counted in X1Y1X2Y2... order. \nFor left and right thumbstick input per controller, use a value of 4, and define 4 virtual axes per Controller in the Input Settings tab.")]
+		// private int axesPerController = 2;
 
-		[SerializeField]
-		[TooltipAttribute("Whether the Axis Listener should check interpolated or raw Axis data.\nInterpolatedDelta and RawDelta are similar to KeyDown / KeyUp events - they only return when there has been a change since the last frame.")]
-		private AxisListeningMode mode = AxisListeningMode.InterpolatedDelta;
+		// [HeaderAttribute("Listener Settings")]
+
+		// [SerializeField]
+		// [Range(0f, 1f)]
+		// [TooltipAttribute("Deadzone for Axis movement when Listening. \nThis should be large, to avoid any accidental movement bindings.")]
+		// private float deadzone = 0.5f;
+
+		// [SerializeField]
+		// [TooltipAttribute("Whether the Axis Listener should check interpolated or raw Axis data.\nInterpolatedDelta and RawDelta are similar to KeyDown / KeyUp events - they only return when there has been a change since the last frame.")]
+		// private AxisListeningMode mode = AxisListeningMode.InterpolatedDelta;
 
 		[SerializeField]
 		[TooltipAttribute("Should try/catch error messages be reported to console?")]
@@ -81,7 +81,7 @@ namespace Softdrink{
 		public string DetectAxis(){
 			pAxisName = axisNameOut;
 
-			switch(mode){
+			switch(settings.mode){
 				case AxisListeningMode.Interpolated:
 					axisNameOut = DetectAxisInterpolated();
 					break;
@@ -99,7 +99,7 @@ namespace Softdrink{
 					break;
 			}
 
-			if(mode == AxisListeningMode.InterpolatedDelta || mode == AxisListeningMode.RawDelta){
+			if(settings.mode == AxisListeningMode.InterpolatedDelta || settings.mode == AxisListeningMode.RawDelta){
 				if(axisNameOut == pAxisName) return "";
 			}
 
@@ -116,12 +116,12 @@ namespace Softdrink{
 			valueTemp = 0f;
 
 			// Iterate through the number of defined virtual sticks
-			for(int i = 1; i < definedVirtualControllers + 1; i++){
-				for(int j = 1; j < axesPerController + 1; j++){
-					tempAxisName = controllerNamePrepend + i + controllerNameIntersperse + j;
+			for(int i = 1; i < settings.definedVirtualControllers + 1; i++){
+				for(int j = 1; j < settings.axesPerController + 1; j++){
+					tempAxisName = settings.controllerNamePrepend + i + settings.controllerNameIntersperse + j;
 					try{
 						valueTemp = Input.GetAxis(tempAxisName);
-						if(Mathf.Abs(valueTemp) >= deadzone){
+						if(Mathf.Abs(valueTemp) >= settings.deadzone){
 							if(valueTemp < 0f) tempAxisName += " -";
 							else tempAxisName += " +";
 							return tempAxisName;
@@ -140,12 +140,12 @@ namespace Softdrink{
 			valueTemp = 0f;
 
 			// Iterate through the number of defined virtual sticks
-			for(int i = 1; i < definedVirtualControllers + 1; i++){
-				for(int j = 1; j < axesPerController + 1; j++){
-					tempAxisName = controllerNamePrepend + i + controllerNameIntersperse + j;
+			for(int i = 1; i < settings.definedVirtualControllers + 1; i++){
+				for(int j = 1; j < settings.axesPerController + 1; j++){
+					tempAxisName = settings.controllerNamePrepend + i + settings.controllerNameIntersperse + j;
 					try{
 						valueTemp = Input.GetAxisRaw(tempAxisName);
-						if(Mathf.Abs(valueTemp) >= deadzone){
+						if(Mathf.Abs(valueTemp) >= settings.deadzone){
 							if(valueTemp < 0f) tempAxisName += " -";
 							else tempAxisName += " +";
 							return tempAxisName;
@@ -186,11 +186,11 @@ namespace Softdrink{
 		// SETTERS -----
 
 		public void setDefinedVirtualControllers(int input){
-			definedVirtualControllers = input;
+			settings.definedVirtualControllers = input;
 		}
 
 		public void setAxesPerController(int input){
-			axesPerController = input;
+			settings.axesPerController = input;
 		}
 
 		public void setListening(bool input){

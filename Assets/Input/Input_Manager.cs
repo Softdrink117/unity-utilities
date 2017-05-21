@@ -36,10 +36,6 @@ namespace Softdrink{
 		[TooltipAttribute("Which Player is this KeyMap associated with? \nA value of 0 or less means that it is common to all Players, as a system-wide mapping. This is desirable in certain cases, such as common menus.")]
 		private int associatedPlayer = 0;
 
-		// [TooltipAttribute("What GameStates use this KeyMap for the given Player?")]
-		// [EnumFlag("Assocaited Game States")]
-		// public Gamestate stateMask = Gamestate.Gameplay | Gamestate.Multiplayer_Gameplay;
-
 		[HeaderAttribute("Directions")]
 
 		[TooltipAttribute("What Key(s) are bound to the logical Up action?")]

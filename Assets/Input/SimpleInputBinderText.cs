@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.UI;
 
 namespace Softdrink{
+	[AddComponentMenu("Scripts/Input/Simple Input Binder Text")]
 	public class SimpleInputBinderText : MonoBehaviour {
 
 		private string displayText = "";

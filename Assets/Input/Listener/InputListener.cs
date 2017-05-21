@@ -59,12 +59,13 @@ namespace Softdrink{
 			if(inputOut.isDefined) inputOut.Print();
 		}
 
+		#if UNITY_EDITOR
 		void OnValidate(){
 			if(_ikl == null || _ial == null) GetReferences();
 			_ikl.setListening(false);
 			_ial.setListening(false);
-
 		}
+		#endif
 
 		public static EInput DetectInput(){
 			return Instance.GetInput();

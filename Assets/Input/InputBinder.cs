@@ -4,6 +4,7 @@ using System.Collections;
 namespace Softdrink{
 	[System.Flags]
 	public enum BindOperation{
+		None = 0,
 		Up = 1 << 0,
 		Down = 1 << 1,
 		Left = 1 << 2,
@@ -23,7 +24,7 @@ namespace Softdrink{
 		// Multiple values can be queued simultaneously - this is what allows for
 		// the Quick Bind to occur!
 		[EnumFlag("Current Bind Operation")]
-		public BindOperation bindOperation = 0 << 0;
+		public BindOperation bindOperation = 0;
 
 		[ReadOnlyAttribute]
 		public bool isBinding = false;
@@ -41,6 +42,10 @@ namespace Softdrink{
 		[HeaderAttribute("Miscellaneous")]
 
 		[SerializeField]
+		[TooltipAttribute("Should the Input_Manager automatically rebuild all Action Outputs on conclusion of a Bind? \nIf disabled, it will be necessary to manually rebuild the Action Outputs.")]
+		private bool autoRebuildOutputs = true;
+
+		[SerializeField]
 		[TooltipAttribute("Enables debug print statements to console.")]
 		private bool debugPrint = false;
 
@@ -48,71 +53,111 @@ namespace Softdrink{
 
 		private string mapName = "Sup Bro";
 
+		private KeyMap map = null;
+		private KeyMap backupMap = null;
+
 		// Initialization -------
 
 		void Awake(){
-			bindOperation = 0 << 0;
+			bindOperation = 0;
 		}
-
-		void Start(){
-
-		}
-
 		// Update -------
 
+		private EInput outTemp = new EInput(KeyCode.None);
+
 		void Update(){
-			if(bindOperation != 0 << 0){
+			if(isBinding){
+				Bind();
+			}
+			
+		}
+
+
+		void Bind(){
+			if(bindOperation != BindOperation.None){
+				// Make sure the Listener is listening for inputs
+				InputListener.setListening(true);
+
+
+				// Directions -------
 				if(hasFlag(bindOperation, BindOperation.Up)){
 					SetBinderText();
-					bindOperation = unsetFlag(bindOperation, BindOperation.Up);
+					outTemp = InputListener.DetectInput();
+					if(outTemp.isDefined && map != null) map.up = new EInput(outTemp);
+					if(outTemp.isDefined) bindOperation = unsetFlag(bindOperation, BindOperation.Up);
 					return;
 				}
 				if(hasFlag(bindOperation, BindOperation.Down)){
 					SetBinderText();
-					bindOperation = unsetFlag(bindOperation, BindOperation.Down);
+					outTemp = InputListener.DetectInput();
+					if(outTemp.isDefined && map != null) map.down = new EInput(outTemp);
+					if(outTemp.isDefined) bindOperation = unsetFlag(bindOperation, BindOperation.Down);
 					return;
 				}
 				if(hasFlag(bindOperation, BindOperation.Left)){
 					SetBinderText();
-					bindOperation = unsetFlag(bindOperation, BindOperation.Left);
+					outTemp = InputListener.DetectInput();
+					if(outTemp.isDefined && map != null) map.left = new EInput(outTemp);
+					if(outTemp.isDefined) bindOperation = unsetFlag(bindOperation, BindOperation.Left);
 					return;
 				}
 				if(hasFlag(bindOperation, BindOperation.Right)){
 					SetBinderText();
-					bindOperation = unsetFlag(bindOperation, BindOperation.Right);
+					outTemp = InputListener.DetectInput();
+					if(outTemp.isDefined && map != null) map.right = new EInput(outTemp);
+					if(outTemp.isDefined) bindOperation = unsetFlag(bindOperation, BindOperation.Right);
 					return;
 				}
 
+				// Face Buttons -------
 				if(hasFlag(bindOperation, BindOperation.A_Button)){
 					SetBinderText();
-					bindOperation = unsetFlag(bindOperation, BindOperation.A_Button);
+					outTemp = InputListener.DetectInput();
+					if(outTemp.isDefined && map != null) map.a = new EInput(outTemp);
+					if(outTemp.isDefined) bindOperation = unsetFlag(bindOperation, BindOperation.A_Button);
 					return;
 				}
 				if(hasFlag(bindOperation, BindOperation.B_Button)){
 					SetBinderText();
-					bindOperation = unsetFlag(bindOperation, BindOperation.B_Button);
+					outTemp = InputListener.DetectInput();
+					if(outTemp.isDefined && map != null) map.b = new EInput(outTemp);
+					if(outTemp.isDefined) bindOperation = unsetFlag(bindOperation, BindOperation.B_Button);
 					return;
 				}
 				if(hasFlag(bindOperation, BindOperation.X_Button)){
 					SetBinderText();
-					bindOperation = unsetFlag(bindOperation, BindOperation.X_Button);
+					outTemp = InputListener.DetectInput();
+					if(outTemp.isDefined && map != null) map.x = new EInput(outTemp);
+					if(outTemp.isDefined) bindOperation = unsetFlag(bindOperation, BindOperation.X_Button);
 					return;
 				}
 				if(hasFlag(bindOperation, BindOperation.Y_Button)){
 					SetBinderText();
-					bindOperation = unsetFlag(bindOperation, BindOperation.Y_Button);
+					outTemp = InputListener.DetectInput();
+					if(outTemp.isDefined && map != null) map.y = new EInput(outTemp);
+					if(outTemp.isDefined) bindOperation = unsetFlag(bindOperation, BindOperation.Y_Button);
 					return;
 				}
-
+				
+				// Start Button -------
 				if(hasFlag(bindOperation, BindOperation.Start_Button)){
 					SetBinderText();
-					bindOperation = unsetFlag(bindOperation, BindOperation.Start_Button);
+					outTemp = InputListener.DetectInput();
+					if(outTemp.isDefined && map != null) map.start = new EInput(outTemp);
+					if(outTemp.isDefined) bindOperation = unsetFlag(bindOperation, BindOperation.Start_Button);
 					return;
 				}
 
-			}else{
-				if(useBinderText) simpleText.Unset();
 			}
+			if(bindOperation == 0){
+				isBinding = false;
+				if(useBinderText) simpleText.Unset();
+				// Deactivate the Listener
+				InputListener.setListening(false);
+
+				if(autoRebuildOutputs) Input_Manager.RebuildOutputs();
+			}
+			if(debugPrint) Debug.Log(System.Convert.ToString((int)bindOperation, 2));
 		}
 
 		void SetBinderText(){
@@ -121,14 +166,32 @@ namespace Softdrink{
 			}
 		}
 
+		void SetMaps(KeyMap mapIn){
+			map = mapIn;
+			backupMap = new KeyMap(mapIn);
+			mapName = map.getName();
+		}
+
 		// Binding functions -------
+
+		public void BeginQuickBind(KeyMap mapIn){
+			SetMaps(mapIn);
+			BeginQuickBind();
+		}
 
 		[ContextMenu("BeginQuickBind")]
 		public void BeginQuickBind(){
 			isBinding = true;
 			bindOperation = BindOperation.Up | BindOperation.Down | BindOperation.Left | BindOperation.Right;
-			bindOperation = bindOperation | BindOperation.A_Button | BindOperation.B_Button | BindOperation.X_Button | BindOperation.Y_Button;
-			bindOperation = bindOperation | BindOperation.Start_Button;
+			bindOperation |= BindOperation.A_Button | BindOperation.B_Button | BindOperation.X_Button | BindOperation.Y_Button;
+			bindOperation |= BindOperation.Start_Button;
+			if(debugPrint) Debug.Log(System.Convert.ToString((int)bindOperation, 2));
+		}
+
+
+		public void RebindUp(KeyMap mapIn){
+			SetMaps(mapIn);
+			RebindUp();
 		}
 
 		[ContextMenu("RebindUp")]
@@ -137,10 +200,22 @@ namespace Softdrink{
 			bindOperation = BindOperation.Up;
 		}
 
+
+		public void RebindDown(KeyMap mapIn){
+			SetMaps(mapIn);
+			RebindDown();
+		}
+
 		[ContextMenu("RebindDown")]
 		public void RebindDown(){
 			isBinding = true;
 			bindOperation = BindOperation.Down;
+		}
+
+
+		public void RebindLeft(KeyMap mapIn){
+			SetMaps(mapIn);
+			RebindLeft();
 		}
 
 		[ContextMenu("RebindLeft")]
@@ -149,10 +224,22 @@ namespace Softdrink{
 			bindOperation = BindOperation.Left;
 		}
 
+
+		public void RebindRight(KeyMap mapIn){
+			SetMaps(mapIn);
+			RebindRight();
+		}
+
 		[ContextMenu("RebindRight")]
 		public void RebindRight(){
 			isBinding = true;
 			bindOperation = BindOperation.Right;
+		}
+
+
+		public void RebindA(KeyMap mapIn){
+			SetMaps(mapIn);
+			RebindA();
 		}
 
 		[ContextMenu("RebindA")]
@@ -161,10 +248,22 @@ namespace Softdrink{
 			bindOperation = BindOperation.A_Button;
 		}
 
+
+		public void RebindB(KeyMap mapIn){
+			SetMaps(mapIn);
+			RebindB();
+		}
+
 		[ContextMenu("RebindB")]
 		public void RebindB(){
 			isBinding = true;
 			bindOperation = BindOperation.B_Button;
+		}
+
+
+		public void RebindX(KeyMap mapIn){
+			SetMaps(mapIn);
+			RebindX();
 		}
 
 		[ContextMenu("RebindX")]
@@ -173,10 +272,22 @@ namespace Softdrink{
 			bindOperation = BindOperation.X_Button;
 		}
 
+
+		public void RebindY(KeyMap mapIn){
+			SetMaps(mapIn);
+			RebindY();
+		}
+
 		[ContextMenu("RebindY")]
 		public void RebindY(){
 			isBinding = true;
 			bindOperation = BindOperation.Y_Button;
+		}
+
+
+		public void RebindStart(KeyMap mapIn){
+			SetMaps(mapIn);
+			RebindStart();
 		}
 
 		[ContextMenu("RebindStart")]
@@ -199,7 +310,7 @@ namespace Softdrink{
 		}
 
 		public BindOperation unsetFlag(BindOperation a, BindOperation b){
-			return a & ~b;
+			return a & (~b);
 		}
 	}
 }

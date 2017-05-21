@@ -38,14 +38,15 @@ namespace Softdrink{
 			axis = "";
 			isKey = true;
 
-			if(key == KeyCode.None) isDefined = false;
-
 			isDefined = true;
+
+			if(key == KeyCode.None) isDefined = false;
 		}
 
 		public EInput(EInput input){
 			key = input.key;
 			axis = input.axis;
+			axisPositive = input.axisPositive;
 			isKey = input.isKey;
 			isDefined = input.isDefined;
 		}

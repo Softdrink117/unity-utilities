@@ -18,7 +18,7 @@ namespace Softdrink{
 		private InputListenerTesterMode mode = InputListenerTesterMode.InputHeld;
 
 		[TooltipAttribute("The particular input being tested.")]
-		public StandardInput test = new StandardInput();
+		public EInput test = new EInput();
 
 		void Start () {
 		

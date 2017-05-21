@@ -42,6 +42,9 @@ namespace Softdrink{
 		[TooltipAttribute("What input is bound to Y?")]
 		public EInput y;
 
+		[TooltipAttribute("What input is bound to Start?")]
+		public EInput start;
+
 		// Constructors -------
 
 		public KeyMap(KeyMap input){
@@ -57,6 +60,8 @@ namespace Softdrink{
 			b = new EInput(input.b);
 			x = new EInput(input.x);
 			y = new EInput(input.y);
+
+			start = new EInput(input.start);
 		}
 
 		// Validate -------
@@ -72,6 +77,8 @@ namespace Softdrink{
 			x.Validate();
 			y.Validate();
 
+			start.Validate();
+
 			fullyBound = CheckFullyBound();
 		}
 
@@ -85,6 +92,8 @@ namespace Softdrink{
 			if(!b.isDefined) return false;
 			if(!x.isDefined) return false;
 			if(!y.isDefined) return false;
+
+			if(!start.isDefined) return false;
 
 			return true;
 		}
@@ -121,6 +130,10 @@ namespace Softdrink{
 
 		public bool EvaluateY(){
 			return y.GetInput();
+		}
+
+		public bool EvaluateStart(){
+			return start.GetInput();
 		}
 
 		// GETTERS

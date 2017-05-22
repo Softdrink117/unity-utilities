@@ -174,21 +174,6 @@ namespace Softdrink{
 
 		public static void RebuildOutputs(){
 			Instance.RebuildOutputsLocal();
-			// // Make sure there are the same number of input and output maps
-			// if(Instance.output.Length != Instance.maps.Length){
-			// 	Instance.output = new ActionOutput[Instance.maps.Length];
-			// 	for(int i = 0; i < Instance.output.Length; i++){
-			// 		Instance.output[i] = new ActionOutput();
-			// 	}
-			// }
-
-			// // Set names of Outputs to match input maps
-			// for(int i = 0; i < Instance.output.Length; i++){
-			// 	Instance.output[i].setName(Instance.maps[i].getName());
-			// 	Instance.output[i].setAssociatedPlayer(Instance.maps[i].getAssociatedPlayer());
-			// 	//output[i] .targetKeymap = maps[i];
-			// 	Instance.output[i].targetKeymap = new KeyMap(Instance.maps[i]);
-			// }
 		}
 
 		// GETTERS

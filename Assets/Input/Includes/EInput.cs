@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 namespace Softdrink{
 
@@ -51,6 +52,11 @@ namespace Softdrink{
 			isDefined = input.isDefined;
 		}
 
+		// Special constructor to load from file
+		public EInput(string input){
+			LoadFromString(input);
+		}
+
 		// Validate settings ------
 
 		public void Validate(){
@@ -58,14 +64,16 @@ namespace Softdrink{
 				isKey = true;
 				isDefined = true;
 				axis = "";
-				return;
+				//return;
 			}
-			if(!axis.Equals("")){
+			else if(!axis.Equals("")){
 				isKey = false;
 				isDefined = true;
 				key = KeyCode.None;
-				return;
+				//return;
 			}
+
+			//Debug.Log(ConvertToString());
 		}
 
 		// EVALUTE INPUT STATUS
@@ -168,6 +176,54 @@ namespace Softdrink{
 		public void Print(){
 			if(isKey) Debug.Log(key);
 			else Debug.Log(axis + " positive: " + axisPositive);
+		}
+
+		// Serialization -------
+
+		// Return as a string format for logging to a config file
+		public string ConvertToString(){
+			string output = "{";
+			output += key.ToString() + "\t";
+			output += ConvertEmpty(axis) + "\t";
+			output += axisPositive.ToString() + "\t";
+			output += isKey.ToString();
+			output += "}";
+			return output;
+		}
+
+		// Load from a string format for initialization from a config file
+		public void LoadFromString(string input){
+			input = input.Trim(new char[]{'{', '}'});
+			string[] inputParts = input.Split(new string[]{"\t"}, StringSplitOptions.None);
+			key = (KeyCode) System.Enum.Parse(typeof(KeyCode), inputParts[0]);
+			axis = ConvertEmpty(inputParts[1]);
+			axisPositive = TryReadBool(inputParts[2]);
+			isKey = TryReadBool(inputParts[3]);
+			Validate();
+		}
+
+
+		// Serialization helper functions
+
+		public string ConvertEmpty(string input){
+			if(input.Equals("")) return "Undefined";
+			if(input.Equals("Undefined")) return "";
+
+			return input;
+		}
+
+		public bool TryReadBool(string input){
+			bool output = false;
+
+			try{
+				output = Convert.ToBoolean(input);
+			}catch(FormatException){
+				#if UNITY_EDITOR
+					Debug.LogError("ERROR: Could not read bool from string " + input);
+				#endif
+			}
+
+			return output;
 		}
 
 	}

@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using SharpConfig;
+using System.IO;
 
 namespace Softdrink{
 
@@ -8,17 +10,10 @@ namespace Softdrink{
 	// - 1 Player, 1 Joystick - bindings on J1A1, J1A2, etc
 	// - 2 Players, 2 Joysticks - P1 bindings defaulted to J1A1, etc
 	// and P2 bindings defaulted to J2A1, etc
-	//TODO: Integration with InputListener and InputBinder
 	//TODO: InputBinder has a generic modal dialog or method
 	// that basically asks "press a key to bind to X action"
 	// This can be either standalone for modifying one key
 	// or used in succession for a 'quick bind'
-	//TODO: InputBinder has two main methods:
-	// One takes an InputMap as a parameter and returns a modified
-	// version of that InputMap. This is useful for rebinding one
-	// key at a time.
-	// The other takes no parameters and returns a new InputMap - 
-	// this is a Quick Bind operation.
 	//TODO: Generic standardized Inputs for Title screen, and other
 	// situations where the Player may not have bound all his inputs
 
@@ -94,6 +89,13 @@ namespace Softdrink{
 		//[ReadOnlyAttribute]
 		[TooltipAttribute("The output Actions procced for a given Player")]
 		public ActionOutput[] output = new ActionOutput[1];
+
+
+		[HeaderAttribute("Miscellaneous")]
+
+		[SerializeField]
+		[TooltipAttribute("Enables debug print statements to console.")]
+		private bool debugPrint = false;
 
 
 		// Assign Singleton instance and initialize input stuff
@@ -180,5 +182,42 @@ namespace Softdrink{
 			return Instance.maps[0];
 		}
 		
+
+		// SERIALIZATION / DESERIALIZATION -------
+
+		[ContextMenu("SaveCurrentConfig")]
+		void SaveCurrentConfig(){
+			SaveInputConfig("Assets/Input/Resources/inputConfig.ini", false);
+		}
+
+		[ContextMenu("SaveDefaultConfig")]
+		void SaveDefaultConfig(){
+			SaveInputConfig("Assets/Input/Resources/defaultInputConfig.cfg", true);
+		}
+
+		void SaveInputConfig(string filename, bool useBinary){
+			Configuration cfg = new Configuration();
+
+			// Iterate through all defined maps and add to configuration
+			for(int i = 0; i < maps.Length; i++){
+				cfg["KeyMap " + i]["Keymap Name"].StringValue = maps[i].getName();
+				
+				// Get the labels and EInput strings for this Keymap
+				string[] labels = maps[i].getMapLabels();
+				string[] bindings = maps[i].getEInputStrings();
+
+				// Iterate through the maps and add to the config
+				for(int j = 0; j < labels.Length; j++){
+					cfg["KeyMap " + i][labels[j]].StringValue = bindings[j];
+				}
+			}
+
+			// Finish and save the config to text file
+			#if UNITY_EDITOR
+				if(debugPrint) Debug.Log("Saving input configuration...");
+			#endif
+			if(useBinary) cfg.SaveToBinaryFile(filename);
+			else cfg.SaveToFile(filename);
+		}
 	}
 }

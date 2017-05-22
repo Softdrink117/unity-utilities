@@ -146,6 +146,47 @@ namespace Softdrink{
 			return associatedPlayer;
 		}
 
+		// Serialization -------
+		// Format the KeyMap as a series of strings for saving to a SharpConfig file
+		
+		// List of the names of each key being mapped (these are config items labels)
+		public string[] getMapLabels(){
+			string[] output = new string[9];
+
+			output[0] = "Up";
+			output[1] = "Down";
+			output[2] = "Left";
+			output[3] = "Right";
+
+			output[4] = "A Button";
+			output[5] = "B Button";
+			output[6] = "X Button";
+			output[7] = "Y Button";
+
+			output[8] = "Start Button";
+
+			return output;
+		}
+
+		// List of the serializable formatted EInputs (the actual content of each config item)
+		public string[] getEInputStrings(){
+			string[] output = new string[9];
+
+			output[0] = up.ConvertToString();
+			output[1] = down.ConvertToString();
+			output[2] = left.ConvertToString();
+			output[3] = right.ConvertToString();
+
+			output[4] = a.ConvertToString();
+			output[5] = b.ConvertToString();
+			output[6] = x.ConvertToString();
+			output[7] = y.ConvertToString();
+
+			output[8] = start.ConvertToString();
+
+			return output;
+		}
+
 	}
 
 }

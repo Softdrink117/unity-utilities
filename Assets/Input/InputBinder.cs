@@ -16,6 +16,14 @@ namespace Softdrink{
 		Start_Button = 1 << 8,
 	};
 
+	public enum InputBindState{
+		Idle = 0,
+		Binding = 1,
+		Confirmation = 2,
+		Success = 3,
+		Failure = 4,
+	};
+
 	// InputBinder is a Singleton - mostly to avoid ANY POSSIBLE ISSUE with
 	// more than one existing at once and massively fucking up the Input system
 	[AddComponentMenu("Scripts/Input/Input Binder")]
@@ -32,7 +40,34 @@ namespace Softdrink{
 		public BindOperation bindOperation = 0;
 
 		[ReadOnlyAttribute]
-		public bool isBinding = false;
+		public InputBindState state = InputBindState.Idle;
+
+		[ReadOnlyAttribute]
+		public bool wasBinding = false;
+
+		[HeaderAttribute("Confirm Dialog and Timer")]
+
+		[TooltipAttribute("Should a confirmaton be requested before assigning the new Map?")]
+		public bool useConfirmation = true;
+
+		[TooltipAttribute("How long should the confirmation timeout before falling back to the old Map be?")]
+		public float confirmationTimeout = 10f;
+
+		[SerializeField]
+		[TooltipAttribute("How long should the START button be held before accepting the current config?")]
+		private float startHoldTime = 1.0f;
+		private float currentStartHoldTime = 0f;
+
+		[HideInInspector]
+		public float currentConfirmationTime = 0f;
+
+		[HideInInspector]
+		public bool isConfirmationDialog = false;
+
+		[SerializeField]
+		[TooltipAttribute("How long should success/failure messages be shown?")]
+		private float resultMessageTimeout = 2.0f;
+		private float currentResultTime = 0.0f;
 
 		[HeaderAttribute("Output Text")]
 
@@ -49,6 +84,10 @@ namespace Softdrink{
 		[SerializeField]
 		[TooltipAttribute("Should the Input_Manager automatically rebuild all Action Outputs on conclusion of a Bind? \nIf disabled, it will be necessary to manually rebuild the Action Outputs.")]
 		private bool autoRebuildOutputs = true;
+
+		[SerializeField]
+		[TooltipAttribute("Should the Input_Manager automatically save the current config file on successful Bind? \nIf disabled, it will be necessary to manually save after a Bind operation.")]
+		private bool autosaveOnSuccess = true;
 
 		[SerializeField]
 		[TooltipAttribute("Enables debug print statements to console.")]
@@ -75,14 +114,37 @@ namespace Softdrink{
 			}
 
 			bindOperation = 0;
+			wasBinding = false;
+
+			currentConfirmationTime = 0.0f;
+			currentResultTime = 0.0f;
+			currentStartHoldTime = 0.0f;
 		}
 		// Update -------
 
 		private EInput outTemp = new EInput(KeyCode.None);
 
 		void Update(){
-			if(isBinding){
-				Bind();
+			switch(state){
+				case InputBindState.Binding:
+					wasBinding = true;
+					Bind();
+					break;
+				case InputBindState.Confirmation:
+					Confirmation();
+					break;
+				case InputBindState.Success:
+					Success();
+					break;
+				case InputBindState.Failure:
+					Failure();
+					break;
+				case InputBindState.Idle:
+					if(wasBinding){
+						if(useBinderText) simpleText.Unset();
+						wasBinding = false;
+					}
+					break;
 			}
 			
 		}
@@ -165,14 +227,19 @@ namespace Softdrink{
 
 			}
 			if(bindOperation == 0){
-				isBinding = false;
-				if(useBinderText) simpleText.Unset();
+				if(useConfirmation){
+					state = InputBindState.Confirmation;
+					currentConfirmationTime = 0f;
+					currentStartHoldTime = 0f;
+				}
+				else{
+					state = InputBindState.Idle;
+					if(autoRebuildOutputs) Input_Manager.RebuildOutputs();
+				}
 				// Deactivate the Listener
 				InputListener.setListening(false);
-
-				if(autoRebuildOutputs) Input_Manager.RebuildOutputs();
 			}
-			if(debugPrint) Debug.Log(System.Convert.ToString((int)bindOperation, 2));
+			//if(debugPrint) Debug.Log(System.Convert.ToString((int)bindOperation, 2));
 		}
 
 		void SetBinderText(){
@@ -187,6 +254,55 @@ namespace Softdrink{
 			mapName = map.getName();
 		}
 
+		void Confirmation(){
+			if(useBinderText){
+				simpleText.Set(confirmationTimeout - currentConfirmationTime);
+			}
+
+			if(map.start.GetInput()){
+				currentStartHoldTime += Time.unscaledDeltaTime;
+			}else{
+				currentStartHoldTime = 0f;
+			}
+
+			if(currentStartHoldTime >= startHoldTime){
+				state = InputBindState.Success;
+				currentResultTime = 0.0f;
+				Input_Manager.RebuildOutputs();
+				if(autosaveOnSuccess) Input_Manager.SaveConfig();
+				return;
+			}
+
+			// Revert to the previous map if the time is expired
+			if(currentConfirmationTime >= confirmationTimeout){
+				//map = Input_Manager.GetOutputFromPlayerID(map.getAssociatedPlayer()).getKeyMap();
+				map.SetKeyMap(backupMap);
+				state = InputBindState.Failure;
+				currentResultTime = 0.0f;
+				Input_Manager.RebuildOutputs();
+			}
+
+			currentConfirmationTime += Time.unscaledDeltaTime;
+		}
+
+		void Success(){
+			if(useBinderText) simpleText.SetSuccess();
+			currentResultTime += Time.unscaledDeltaTime;
+			if(currentResultTime >= resultMessageTimeout){
+				state = InputBindState.Idle;
+				currentResultTime = 0.0f;
+			}
+		}
+
+		void Failure(){
+			if(useBinderText) simpleText.SetFailure();
+			currentResultTime += Time.unscaledDeltaTime;
+			if(currentResultTime >= resultMessageTimeout){
+				state = InputBindState.Idle;
+				currentResultTime = 0.0f;
+			}
+		}
+
 		// Binding functions -------
 
 		public static void BeginQuickBind(KeyMap mapIn){
@@ -196,7 +312,7 @@ namespace Softdrink{
 
 		[ContextMenu("BeginQuickBind")]
 		public void BeginQuickBind(){
-			isBinding = true;
+			state = InputBindState.Binding;
 			bindOperation = BindOperation.Up | BindOperation.Down | BindOperation.Left | BindOperation.Right;
 			bindOperation |= BindOperation.A_Button | BindOperation.B_Button | BindOperation.X_Button | BindOperation.Y_Button;
 			bindOperation |= BindOperation.Start_Button;
@@ -211,7 +327,7 @@ namespace Softdrink{
 
 		[ContextMenu("RebindUp")]
 		public void RebindUp(){
-			isBinding = true;
+			state = InputBindState.Binding;
 			bindOperation = BindOperation.Up;
 		}
 
@@ -223,7 +339,7 @@ namespace Softdrink{
 
 		[ContextMenu("RebindDown")]
 		public void RebindDown(){
-			isBinding = true;
+			state = InputBindState.Binding;
 			bindOperation = BindOperation.Down;
 		}
 
@@ -235,7 +351,7 @@ namespace Softdrink{
 
 		[ContextMenu("RebindLeft")]
 		public void RebindLeft(){
-			isBinding = true;
+			state = InputBindState.Binding;
 			bindOperation = BindOperation.Left;
 		}
 
@@ -247,7 +363,7 @@ namespace Softdrink{
 
 		[ContextMenu("RebindRight")]
 		public void RebindRight(){
-			isBinding = true;
+			state = InputBindState.Binding;
 			bindOperation = BindOperation.Right;
 		}
 
@@ -259,7 +375,7 @@ namespace Softdrink{
 
 		[ContextMenu("RebindA")]
 		public void RebindA(){
-			isBinding = true;
+			state = InputBindState.Binding;
 			bindOperation = BindOperation.A_Button;
 		}
 
@@ -271,7 +387,7 @@ namespace Softdrink{
 
 		[ContextMenu("RebindB")]
 		public void RebindB(){
-			isBinding = true;
+			state = InputBindState.Binding;
 			bindOperation = BindOperation.B_Button;
 		}
 
@@ -283,7 +399,7 @@ namespace Softdrink{
 
 		[ContextMenu("RebindX")]
 		public void RebindX(){
-			isBinding = true;
+			state = InputBindState.Binding;
 			bindOperation = BindOperation.X_Button;
 		}
 
@@ -295,7 +411,7 @@ namespace Softdrink{
 
 		[ContextMenu("RebindY")]
 		public void RebindY(){
-			isBinding = true;
+			state = InputBindState.Binding;
 			bindOperation = BindOperation.Y_Button;
 		}
 
@@ -307,7 +423,7 @@ namespace Softdrink{
 
 		[ContextMenu("RebindStart")]
 		public void RebindStart(){
-			isBinding = true;
+			state = InputBindState.Binding;
 			bindOperation = BindOperation.Start_Button;
 		}
 

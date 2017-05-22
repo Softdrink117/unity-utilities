@@ -64,6 +64,46 @@ namespace Softdrink{
 			start = new EInput(input.start);
 		}
 
+		// Special constructor to build a new KeyMap when loading from a String
+		public KeyMap(string[] values){
+			Name = values[0];
+			//Debug.Log(values[1]);
+			associatedPlayer = System.Convert.ToInt32(values[1]);
+
+			up = new EInput(values[2]);
+			down = new EInput(values[3]);
+			left = new EInput(values[4]);
+			right = new EInput(values[5]);
+
+			a = new EInput(values[6]);
+			b = new EInput(values[7]);
+			x = new EInput(values[8]);
+			y = new EInput(values[9]);
+
+			start = new EInput(values[10]);
+
+		}
+
+		// Set -------
+
+		// Set the keymap from an existing one WITHOUT building a new one
+		public void SetKeyMap(KeyMap input){
+			Name = input.getName();
+			associatedPlayer = input.getAssociatedPlayer();
+
+			up = new EInput(input.up);
+			down = new EInput(input.down);
+			left = new EInput(input.left);
+			right = new EInput(input.right);
+
+			a = new EInput(input.a);
+			b = new EInput(input.b);
+			x = new EInput(input.x);
+			y = new EInput(input.y);
+
+			start = new EInput(input.start);
+		}
+
 		// Validate -------
 
 		public void Validate(){

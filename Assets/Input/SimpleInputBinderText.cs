@@ -8,11 +8,42 @@ namespace Softdrink{
 
 		private string displayText = "";
 
+		[HeaderAttribute("Display Text")]
+
 		[SerializeField]
+		[MultilineAttribute(3)]
 		[TooltipAttribute("The default text to show when binding a new control.")]
 		private string defaultBindOpText = "Please press the input to use for ";
 
+		[SerializeField]
+		[MultilineAttribute(3)]
+		[TooltipAttribute("The text to show when in the confirmation dialog.")]
+		private string confirmationText = "Please press and hold START to confirm,\nor wait ";
+
+		[SerializeField]
+		[TooltipAttribute("The text to show in the confirmation dialog after the timer.")]
+		private string confirmationAppend = " seconds to revert control bindings.";
+
+		[HeaderAttribute("Success / Failure Text")]
+
+		[SerializeField]
+		[MultilineAttribute(3)]
+		[TooltipAttribute("The text to show if the Binding was successful.")]
+		private string successText = "Controls successfully rebound!";
+		[SerializeField]
+		[MultilineAttribute(3)]
+		[TooltipAttribute("The text to show if the Binding was not successful.")]
+		private string failureText = "Controls were not rebound; reverted to last working configuration.";
+
+		[HeaderAttribute("Miscellaneous")]
+
+		[SerializeField]
+		[TooltipAttribute("Show a prepend listing all currently detected controllers?")]
+		private bool showConnectedControllers = true;
+
 		private string keyMapName = "";
+
+		private string controllerText = "";
 
 		private Text _text;
 
@@ -37,8 +68,25 @@ namespace Softdrink{
 		public void Set(BindOperation input, string mapName){
 			active = true;
 			keyMapName = mapName;
+			if(showConnectedControllers) controllerText = InputListener.DetectControllers() + "\n\n";
+			else controllerText = "";
 			UpdateCurrentBind(input);
 
+		}
+
+		public void Set(float timeIn){
+			displayText = confirmationText + timeIn.ToString("F0") + confirmationAppend;
+			SetText();
+		}
+
+		public void SetSuccess(){
+			displayText = successText;
+			SetText();
+		}
+
+		public void SetFailure(){
+			displayText = failureText;
+			SetText();
 		}
 
 		public void Unset(){
@@ -48,7 +96,7 @@ namespace Softdrink{
 		}
 
 		public void UpdateCurrentBind(BindOperation input){
-			displayText = keyMapName + "\n" + defaultBindOpText;
+			displayText = controllerText + keyMapName + "\n" + defaultBindOpText;
 
 			if(hasFlag(input, BindOperation.Up)){
 				displayText += "UP";

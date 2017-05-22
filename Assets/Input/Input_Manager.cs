@@ -71,6 +71,13 @@ namespace Softdrink{
 		public void setAssociatedPlayer(int input){
 			associatedPlayer = input;
 		}
+
+		// GETTERS 
+
+		// Used when reverting to a known safe configuration during failed Input Bind operations
+		public KeyMap getKeyMap(){
+			return targetKeymap;
+		}
 	}
 
 	// Input_Manager is a Singleton that handles all input for all Players in the game
@@ -89,6 +96,14 @@ namespace Softdrink{
 		//[ReadOnlyAttribute]
 		[TooltipAttribute("The output Actions procced for a given Player")]
 		public ActionOutput[] output = new ActionOutput[1];
+
+		[HeaderAttribute("Configuration Files")]
+
+		[TooltipAttribute("The file that will be loaded/saved for user-defined configurations.")]
+		public string userConfigFile = "inputConfig";
+
+		[TooltipAttribute("The file that will be loaded as the default configuration.")]
+		public string defaultConfigFile = "defaultInputConfig";
 
 
 		[HeaderAttribute("Miscellaneous")]
@@ -111,6 +126,10 @@ namespace Softdrink{
 				Debug.LogError("ERROR! The Input Manager encountered another instance of Input_Manager; it destroyed itself rather than overwrite the existing instance.", this);
 			}
 
+			hasTriedDefaultLoad = false;
+
+			LoadInputIni();
+
 		}
 
 		void Update(){
@@ -131,6 +150,11 @@ namespace Softdrink{
 				maps[i].Validate();
 			}
 
+			RebuildOutputsLocal();
+		}
+		#endif
+
+		void RebuildOutputsLocal(){
 			// Make sure there are the same number of input and output maps
 			if(output.Length != maps.Length){
 				output = new ActionOutput[maps.Length];
@@ -147,7 +171,6 @@ namespace Softdrink{
 				output[i].targetKeymap = new KeyMap(maps[i]);
 			}
 		}
-		#endif
 
 		public static void RebuildOutputs(){
 			// Make sure there are the same number of input and output maps
@@ -187,20 +210,29 @@ namespace Softdrink{
 
 		[ContextMenu("SaveCurrentConfig")]
 		void SaveCurrentConfig(){
-			SaveInputConfig("Assets/Input/Resources/inputConfig.ini", false);
+			SaveInputConfig("Assets/Input/Resources/" + userConfigFile + ".ini", false);
+		}
+
+		// Externally accesible call to save the current configuration to file
+		public static void SaveConfig(){
+			Instance.SaveCurrentConfig();
 		}
 
 		[ContextMenu("SaveDefaultConfig")]
 		void SaveDefaultConfig(){
-			SaveInputConfig("Assets/Input/Resources/defaultInputConfig.cfg", true);
+			SaveInputConfig("Assets/Input/Resources/" + defaultConfigFile + ".cfg", true);
 		}
 
 		void SaveInputConfig(string filename, bool useBinary){
 			Configuration cfg = new Configuration();
 
+			// Indicate the number of defined maps in the output file
+			cfg["General"]["Defined Keymaps"].IntValue = maps.Length;
+
 			// Iterate through all defined maps and add to configuration
 			for(int i = 0; i < maps.Length; i++){
 				cfg["KeyMap " + i]["Keymap Name"].StringValue = maps[i].getName();
+				cfg["KeyMap " + i]["Associated Player ID"].StringValue = maps[i].getAssociatedPlayer().ToString();
 				
 				// Get the labels and EInput strings for this Keymap
 				string[] labels = maps[i].getMapLabels();
@@ -218,6 +250,72 @@ namespace Softdrink{
 			#endif
 			if(useBinary) cfg.SaveToBinaryFile(filename);
 			else cfg.SaveToFile(filename);
+		}
+
+		[ContextMenu("LoadInputIni")]
+		void LoadInputIni(){
+			hasTriedDefaultLoad = false;
+			if(File.Exists("Assets/Input/Resources/" + userConfigFile + ".ini")){
+				LoadInputConfig("Assets/Input/Resources/" + userConfigFile + ".ini", false);
+			}else{
+				LoadDefaultConfig();
+			}
+			
+		}
+
+		[ContextMenu("LoadDefaultConfig")]
+		void LoadDefaultConfig(){
+			if(!File.Exists("Assets/Input/Resources/" + defaultConfigFile + ".cfg")){
+				Debug.LogError("ERROR: Input_Manager failed when trying to load default config file... Does the file exist?", this);
+				return;
+			}
+			// Used to prevent infinite recursion
+			if(!hasTriedDefaultLoad){
+				LoadInputConfig("Assets/Input/Resources/" + defaultConfigFile + ".cfg", true);
+				hasTriedDefaultLoad = true;
+			}else{
+				Debug.LogError("ERROR: Input_Manager has attempted to load a default Input Config from " + defaultConfigFile + " as a fallback, and failed. Please verify integrity of default config file!", this);
+			}
+		}
+
+		private bool hasTriedDefaultLoad = false;
+
+		void LoadInputConfig(string filename, bool useBinary){
+			try{
+				Configuration cfg;
+				if(useBinary) cfg = Configuration.LoadFromBinaryFile(filename);
+				else cfg = Configuration.LoadFromFile(filename);
+
+				// Grab the map labels from the existing map
+				string[] labels = maps[0].getMapLabels();
+				string[] values = new string[labels.Length + 2];
+
+				// Get the number of defined maps from the loaded file
+				int mapCount = cfg["General"]["Defined Keymaps"].IntValue;
+				maps = new KeyMap[mapCount];
+
+				for(int i = 0; i < mapCount; i++){
+					values[0] = cfg["KeyMap " + i]["KeyMap Name"].StringValue;
+					values[1] = cfg["KeyMap " + i]["Associated Player ID"].StringValue;
+
+					// Iterate through the defined binding labels
+					for(int j = 0; j < labels.Length; j++){
+						values[2 + j] = cfg["KeyMap " + i][labels[j]].StringValue;
+					}
+
+					maps[i] = new KeyMap(values);
+				}
+
+				// Then rebuild the Action Outputs to match the new KeyMaps
+				RebuildOutputsLocal();
+
+				//hasTriedDefaultLoad = false;
+
+			}catch{
+				Debug.LogError("ERROR: Input_Manager encountered an error trying to load an input configuration file from " + filename + "\nPlease verify integrity and formatting of target file! \nReverting to default config...", this);
+				LoadDefaultConfig();
+			}
+
 		}
 	}
 }

@@ -182,18 +182,18 @@ namespace Softdrink{
 
 		// Return as a string format for logging to a config file
 		public string ConvertToString(){
-			string output = "{";
+			string output = "(";
 			output += key.ToString() + "\t";
 			output += ConvertEmpty(axis) + "\t";
 			output += axisPositive.ToString() + "\t";
 			output += isKey.ToString();
-			output += "}";
+			output += ")";
 			return output;
 		}
 
 		// Load from a string format for initialization from a config file
 		public void LoadFromString(string input){
-			input = input.Trim(new char[]{'{', '}'});
+			input = input.Trim(new char[]{'(', ')', '{', '}'});
 			string[] inputParts = input.Split(new string[]{"\t"}, StringSplitOptions.None);
 			key = (KeyCode) System.Enum.Parse(typeof(KeyCode), inputParts[0]);
 			axis = ConvertEmpty(inputParts[1]);

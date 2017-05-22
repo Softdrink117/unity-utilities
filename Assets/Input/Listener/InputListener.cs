@@ -115,6 +115,10 @@ namespace Softdrink{
 			return _sb.ToString();
 		}
 
+		public static string DetectControllers(){
+			return Instance.DetectConnectedControllers();
+		}
+
 		// SETTERS -----
 
 		public static void setListening(bool input){
